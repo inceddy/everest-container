@@ -1,0 +1,9 @@
+
+*.sublime-workspace
+*.sublime-project
+*.local.*
+composer.lock
+/_*
+Thumbs.db
+/vendor
+/tmp

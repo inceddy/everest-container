@@ -1,0 +1,20 @@
+{
+    "name": "everest/container",
+    "description": "Everest - Dependency Container Component",
+    "license": "MIT",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Philipp Steingrebe",
+            "email": "philipp@steingrebe.de"
+        }
+    ],
+    "require": {
+        "php" : "^7.1"
+    },
+    "autoload": {
+        "psr-0" : {
+            "Everest\\Container\\" : "src/"
+        }
+    }
+}
