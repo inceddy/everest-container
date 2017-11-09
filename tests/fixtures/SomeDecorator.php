@@ -1,12 +1,12 @@
 <?php
 
-class SomeDecorator {
+class SomeDecorator implements \Everest\Container\FactoryProviderInterface {
 
 	private $factor = 2;
 
-	public function __construct()
+	public function getFactory()
 	{
-		$this->factory = ['DecoratedInstance', [$this, 'factory']];
+		return ['DecoratedInstance', [$this, 'factory']];
 	}
 
 	public function factory($instance)

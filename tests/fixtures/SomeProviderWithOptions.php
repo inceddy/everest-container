@@ -15,15 +15,17 @@ class Multiplier {
 	}
 }
 
-class SomeProviderWithOptions {
+class SomeProviderWithOptions implements \Everest\Container\FactoryProviderInterface {
 
 	private $factor = 1;
 
-	public $factory;
-
 	public function setFactor($factor) {
 		$this->factor = $factor;
-		$this->factory = [$this, 'factory'];
+	}
+
+	public function getFactory()
+	{
+		return [$this, 'factory'];
 	}
 
 	public function factory()
