@@ -30,8 +30,20 @@ class Cache
 		return array_key_exists($key, $this->cache);
 	}
 
-	public function merge(Cache $cache)
+	public function merge(Cache $cache, string $prefix = null)
 	{
-		$this->cache = array_merge($this->cache, $cache->cache);
+		if ($prefix) {
+			$keys = array_keys($cache->cache);
+			foreach ($keys as $index => $key) {
+				$keys[$index] = $prefix . '/' . $key;
+			}
+
+			$cache = array_combine($keys, array_values($cache->cache));
+		}
+		else {
+			$cache = $cache->cache;
+		}
+		
+		$this->cache = array_merge($this->cache, $cache);
 	}
 }
