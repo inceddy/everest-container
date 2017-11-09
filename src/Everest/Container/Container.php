@@ -56,9 +56,10 @@ function extractParameters($callableOrClassname) : array {
 			break;
 
 		default:
-			throw new InvalidArgumentException(
-				sprintf('Cant extract parameters from given argument with type \'%s\'.', gettype($callableOrClassname))
-			);
+			throw new InvalidArgumentException(sprintf(
+				'Cant extract parameters from given argument with type \'%s\'.', 
+				is_object($callableOrClassname) ? get_class($callableOrClassname) : gettype($callableOrClassname)
+			));
 	}
 
 	return array_map(function(ReflectionParameter $parameter){
@@ -205,7 +206,7 @@ class Container implements ArrayAccess {
 
 				$provider = $providerInjector->get($name . 'Provider');
 				// Determin factory dependencies
-				$factoryAndDependencies = Container::getDependencyArray($provider->factory);
+				$factoryAndDependencies = Container::getDependencyArray($provider->getFactory());
 				$instance = $this->invoke($factoryAndDependencies);
 
 				$this->tracer->received($name);
@@ -217,14 +218,34 @@ class Container implements ArrayAccess {
 		);
 
 		// Implement container as provider
-		$this->provider('Container', (object)['factory' => [function(){
+		$this->provider('Container', new Provider([function(){
 			return $this;
-		}]]);
+		}]));
 
 		// Implement instance injector as provider
-		$this->provider('Injector', (object)['factory' => [function() {
+		$this->provider('Injector', new Provider([function() {
 			return $this->instanceInjector;
-		}]]);
+		}]));
+	}
+
+
+	/**
+	 * Imports an other container to this one.
+	 *
+	 * @param Everest\Container\Container $container
+	 *   The container to import
+	 * @param string|null $prefix
+	 *   The optional prefix to prefix the container keys
+	 *
+	 * @return self
+	 */
+	
+	public function import(Container $container, string $prefix = null)
+	{
+		$container->boot();
+		$this->providerCache->merge($container->providerCache, $prefix);
+		$this->instanceCache->merge($container->instanceCache, $prefix);
+		return $this;
 	}
 
 
@@ -244,12 +265,8 @@ class Container implements ArrayAccess {
 	 * 
 	 */
 	
-	public function provider(string $name, $provider)
+	public function provider(string $name, FactoryProviderInterface $provider)
 	{
-		if (!is_object($provider) || !property_exists($provider, 'factory')) {
-			throw new InvalidArgumentException('The provider must be an object with public property \'factory\'.');
-		}
-
 		$this->providerCache->set($name . 'Provider', $provider);
 		return $this;
 	}
@@ -276,22 +293,23 @@ class Container implements ArrayAccess {
 	public function decorator($name, $decorator)
 	{
 		$lagacyProvider = $this->providerInjector->get($name . 'Provider');
-		$lagacyFactory = $lagacyProvider->factory;
+		$lagacyFactory = $lagacyProvider->getFactory();
 
 		// If decorator is provider resolve factory
-		if (is_object($decorator) && property_exists($decorator, 'factory')) {
-			$decorator = $decorator->factory;
+		if (is_object($decorator) && $decorator instanceof FactoryProviderInterface) {
+			$decorator = $decorator->getFactory();
 		}
 
 		$decoratorAndDependencies = self::getDependencyArray($decorator);
 
-		// Overload old factory
-		$lagacyProvider->factory = function() use ($decoratorAndDependencies, $lagacyFactory) {
+		// Overload old provider
+		return $this->factory($name, function() use ($decoratorAndDependencies, $lagacyFactory) {
 			$decoratedInstance = $this->instanceInjector->invoke($lagacyFactory);
-			return $this->instanceInjector->invoke($decoratorAndDependencies, ['DecoratedInstance' => $decoratedInstance]);
-		};
-
-		return $this;
+			return $this->instanceInjector->invoke(
+				$decoratorAndDependencies, 
+				['DecoratedInstance' => $decoratedInstance]
+			);
+		});
 	}
 
 
@@ -311,11 +329,9 @@ class Container implements ArrayAccess {
 		
 		return $this->provider(
 			$name, 
-			(object)['factory' => [
-				'Injector', function($injector) use ($dependenciesAndService) {
+			new Provider(['Injector', function($injector) use ($dependenciesAndService) {
 					return $injector->instantiate($dependenciesAndService);
-				}
-			]]
+			}])
 		);
 	}
 
@@ -332,7 +348,7 @@ class Container implements ArrayAccess {
 	
 	public function factory(string $name, $factory)
 	{
-		return $this->provider($name, (object)['factory' => $factory]);
+		return $this->provider($name, new Provider($factory));
 	}
 
 
@@ -387,6 +403,7 @@ class Container implements ArrayAccess {
 	public function config($config)
 	{
 		$this->configs[] = $config;
+
 		return $this;
 	}
 
@@ -402,6 +419,10 @@ class Container implements ArrayAccess {
 	{
 		$this->state = self::STATE_CONFIG;
 
+		if ($this->state === self::STATE_BOOTED) {
+			return $this;
+		}
+
 		foreach ($this->configs as $config) {
 			$dependenciesAndCallable = self::getDependencyArray($config);
 
@@ -410,8 +431,8 @@ class Container implements ArrayAccess {
 
 			call_user_func_array($callable, $dependencies);
 		}
-		$this->state = self::STATE_BOOTED;
 
+		$this->state = self::STATE_BOOTED;
 		return $this;
 	}
 

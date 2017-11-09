@@ -139,26 +139,6 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals($container['multiplier'](10), 100);
   }
 
-  /**
-   * @expectedException InvalidArgumentException
-   */
-  
-  public function testProviderWithNoneObjectOrArray()
-  {
-    $container = $this->buildContainer()
-      ->provider('Test', 'invalid-argument');
-  }
-
-  /**
-   * @expectedException InvalidArgumentException
-   */
-  
-  public function testProviderWithMissinfFactory()
-  {
-    $container = $this->buildContainer()
-      ->provider('Test', ['factorrrry' => ['Test']]);
-  }
-
   public function testDecoratorWithFactory()
   {
     $container = $this->buildContainer()
@@ -170,7 +150,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('HelloWorld', $container['SomeValue']);
   }
 
-   public function testDecoratorWithProvider()
+  public function testDecoratorWithProvider()
   {
     $container = $this->buildContainer()
       ->value('SomeValue', 'Hello')
@@ -319,5 +299,18 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
   {
     $container = $this->buildContainer();
     unset($container['Test']);
+  }
+
+  public function testImport()
+  {
+    $container = new Container;
+
+    $crate = (new Container)
+      ->value('A', 'Foo')
+      ->value('A', 'Bar');
+
+    $container->import($crate, 'Sub');
+
+    $this->assertSame('Bar', $container['Sub/A']);
   }
 }

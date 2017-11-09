@@ -12,15 +12,13 @@ class SomeActionController {
 	}
 }
 
-class SomeActionControllerProvider {
+class SomeActionControllerProvider implements \Everest\Container\FactoryProviderInterface {
 
 	private $factor = 2;
 
-	public $factory;
-
-	public function __construct()
+	public function getFactory()
 	{
-		$this->factory = [$this, 'factory'];
+		return [$this, 'factory'];
 	}
 
 	public function factory()
