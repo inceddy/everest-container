@@ -167,7 +167,7 @@ class Container implements ArrayAccess {
 			$this->instanceCache->merge($parentContainer->instanceCache);
 		}
 
-		$this->buildInjectors();
+		//$this->buildInjectors();
 	}
 
 
@@ -300,7 +300,12 @@ class Container implements ArrayAccess {
 
 	public function decorator($name, $decorator)
 	{
-		$lagacyProvider = $this->providerInjector->get($name . 'Provider');
+		$lagacyProvider = $this->providerCache->get($name . 'Provider');
+
+		if (!$lagacyProvider) {
+			throw new \RuntimeException(sprintf('Lagacy provider for %s not found.', $name));
+		}
+
 		$lagacyFactory = $lagacyProvider->getFactory();
 
 		// If decorator is provider resolve factory
@@ -426,6 +431,7 @@ class Container implements ArrayAccess {
 	public function boot()
 	{
 		$this->state = self::STATE_CONFIG;
+		$this->buildInjectors();
 
 		if ($this->state === self::STATE_BOOTED) {
 			return $this;
@@ -540,6 +546,9 @@ class Container implements ArrayAccess {
 	
 	public function offsetExists($name)
 	{
+		if ($this->state === self::STATE_INITIAL) {
+			$this->boot();
+		}
 		return $this->instanceInjector->has($name) || 
 		       $this->providerInjector->has($name . 'Provider');
 	}
