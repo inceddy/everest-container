@@ -13,7 +13,7 @@ require_once __DIR__ . '/fixtures/Foo.php';
 /**
  * @author  Philipp Steingrebe <philipp@steingrebe.de>
  */
-class ContainerTest extends PHPUnit_Framework_TestCase {
+class ContainerTest extends PHPUnit\Framework\TestCase {
 
   static function buildContainer()
   {
@@ -312,5 +312,13 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     $container->import($crate, 'Sub');
 
     $this->assertSame('Bar', $container['Sub/A']);
+  }
+
+  public function testLazyLoad()
+  {
+    $container = new Container;
+    $container->value('A', 'Foo');
+
+    $this->assertSame('Foo', $container['lazy::A']());
   }
 }

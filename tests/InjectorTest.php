@@ -10,7 +10,7 @@ require_once __DIR__ .'/fixtures/Foo.php';
 /**
  * @author  Philipp Steingrebe <philipp@steingrebe.de>
  */
-class InjectorTest extends PHPUnit_Framework_TestCase {
+class InjectorTest extends PHPUnit\Framework\TestCase {
 
   public function testHas()
   {

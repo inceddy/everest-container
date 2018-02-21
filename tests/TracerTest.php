@@ -6,7 +6,7 @@ use Everest\Container\Tracer;
 /**
  * @author  Philipp Steingrebe <philipp@steingrebe.de>
  */
-class TracerTest extends PHPUnit_Framework_TestCase {
+class TracerTest extends PHPUnit\Framework\TestCase {
 
   public function testTracer()
   {
