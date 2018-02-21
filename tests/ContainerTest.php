@@ -303,15 +303,27 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
 
   public function testImport()
   {
-    $container = new Container;
+    $called = false;
+    $container = (new Container)
+      ->factory('C', ['A', 'B', function($a, $b) use (&$called){
+        $this->assertSame($a, 'Foo');
+        $this->assertSame($b, 'Bar');
+        $called = true;
+        return true;
+      }]);
 
     $crate = (new Container)
       ->value('A', 'Foo')
-      ->value('A', 'Bar');
+      ->value('B', 'Bar');
 
     $container->import($crate, 'Sub');
+    $container->import($crate);
 
-    $this->assertSame('Bar', $container['Sub/A']);
+    $this->assertSame('Foo', $container['A']);
+    $this->assertSame('Bar', $container['Sub/B']);
+    $this->assertTrue($container['C']);
+
+    $this->assertTrue($called);
   }
 
   public function testLazyLoad()
