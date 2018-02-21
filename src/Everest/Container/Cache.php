@@ -32,16 +32,16 @@ class Cache
 
 	public function merge(Cache $cache, string $prefix = null)
 	{
+		$cache = $cache->cache;
+		unset($cache['InjectorProvider'], $cache['ContainerProvider']);
+
 		if ($prefix) {
-			$keys = array_keys($cache->cache);
+			$keys = array_keys($cache);
 			foreach ($keys as $index => $key) {
 				$keys[$index] = $prefix . '/' . $key;
 			}
 
-			$cache = array_combine($keys, array_values($cache->cache));
-		}
-		else {
-			$cache = $cache->cache;
+			$cache = array_combine($keys, array_values($cache));
 		}
 		
 		$this->cache = array_merge($this->cache, $cache);
