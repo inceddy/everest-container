@@ -202,14 +202,23 @@ class Container implements ArrayAccess {
 			$this->instanceCache, 
 			// Factory
 			function($name) use ($providerInjector) {
+
+				if ($lazy = strpos($name, 'lazy::') === 0) {
+					$name = substr($name, 6);
+				}
+
 				$this->tracer->request($name);
 
 				$provider = $providerInjector->get($name . 'Provider');
 				// Determin factory dependencies
 				$factoryAndDependencies = Container::getDependencyArray($provider->getFactory());
-				$instance = $this->invoke($factoryAndDependencies);
+				$instance = $lazy 
+					? function() use ($factoryAndDependencies){
+						return $this->invoke($factoryAndDependencies);
+					} 
+					: $this->invoke($factoryAndDependencies);
 
-				$this->tracer->received($name);
+				$this->tracer->received($name . ($lazy ? ' [lazy]' : ''));
 
 				return $instance;
 			}, 
@@ -242,7 +251,6 @@ class Container implements ArrayAccess {
 	
 	public function import(Container $container, string $prefix = null)
 	{
-		$container->boot();
 		$this->providerCache->merge($container->providerCache, $prefix);
 		$this->instanceCache->merge($container->instanceCache, $prefix);
 		return $this;
