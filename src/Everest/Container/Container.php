@@ -179,6 +179,8 @@ class Container implements ArrayAccess {
 	
 	private function buildInjectors()
 	{
+		$container = $this;
+
 		// Debug tracer
 		$this->tracer = new Tracer;
 
@@ -201,7 +203,7 @@ class Container implements ArrayAccess {
 			// Cache
 			$this->instanceCache, 
 			// Factory
-			function($name) use ($providerInjector) {
+			function($name) use ($providerInjector, $container) {
 
 				if ($lazy = strpos($name, 'lazy::') === 0) {
 					$name = substr($name, 6);
@@ -217,6 +219,11 @@ class Container implements ArrayAccess {
 						return $this->invoke($factoryAndDependencies);
 					} 
 					: $this->invoke($factoryAndDependencies);
+
+				// Inject container
+				if ($instance instanceof ContainerAwareInterface) {
+					$instance->setContainer($container);
+				}
 
 				$this->tracer->received($name . ($lazy ? ' [lazy]' : ''));
 

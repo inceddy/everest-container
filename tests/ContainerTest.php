@@ -9,6 +9,7 @@ require_once __DIR__ . '/fixtures/SomeFactory.php';
 require_once __DIR__ . '/fixtures/SomeProviderWithOptions.php';
 require_once __DIR__ . '/fixtures/SomeActionController.php';
 require_once __DIR__ . '/fixtures/Foo.php';
+require_once __DIR__ . '/fixtures/FooContainerAware.php';
 
 /**
  * @author  Philipp Steingrebe <philipp@steingrebe.de>
@@ -332,5 +333,23 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
     $container->value('A', 'Foo');
 
     $this->assertSame('Foo', $container['lazy::A']());
+  }
+
+  public function testContainterAware()
+  {
+    $container = new Container;
+    $container->value('A', 'Foo');
+    $container->value('B', 'Bar');
+
+    $container->factory('Factory', [function() { return new FooContainerAware;}]);
+    $container->service('Service', [FooContainerAware::CLASS]);
+
+    $foo1 = $container['Factory'];
+    $this->assertInstanceOf(FooContainerAware::CLASS, $foo1);
+    $this->assertEquals(['Foo', 'Bar'], $foo1->require('A', 'B'));
+
+    $foo2 = $container['Service'];
+    $this->assertInstanceOf(FooContainerAware::CLASS, $foo2);
+    $this->assertEquals(['Foo', 'Bar'], $foo2->require('A', 'B'));
   }
 }
