@@ -166,8 +166,6 @@ class Container implements ArrayAccess {
 			$this->providerCache->merge($parentContainer->providerCache);
 			$this->instanceCache->merge($parentContainer->instanceCache);
 		}
-
-		//$this->buildInjectors();
 	}
 
 
@@ -258,6 +256,10 @@ class Container implements ArrayAccess {
 	
 	public function import(Container $container, string $prefix = null)
 	{
+		if ($prefix) {
+			$prefix = rtrim($prefix, '/');
+		}
+
 		$this->providerCache->merge($container->providerCache, $prefix);
 		$this->instanceCache->merge($container->instanceCache, $prefix);
 		return $this;
