@@ -284,6 +284,7 @@ class Container implements ArrayAccess {
 	
 	public function provider(string $name, FactoryProviderInterface $provider)
 	{
+		$this->instanceCache->unset($name);
 		$this->providerCache->set($name . 'Provider', $provider);
 		return $this;
 	}

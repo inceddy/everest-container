@@ -20,6 +20,11 @@ class Cache
 			$this->cache[$key] = $value;
 	}
 
+	public function unset(string $key)
+	{
+		unset($this->cache[$key]);
+	}
+
 	public function get(string $key)
 	{
 		return $this->cache[$key] ?? null;
