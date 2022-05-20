@@ -502,7 +502,7 @@ class Container implements ArrayAccess {
 	 *
 	 * Satisfies ArrayAcces interface.
 	 *
-	 * @param  string $name
+	 * @param  mixed $name
 	 *    The name of the dependency to get
 	 *
 	 * @return mixed
@@ -510,7 +510,7 @@ class Container implements ArrayAccess {
 	 * 
 	 */
 
-	public function offsetGet($name)
+	public function offsetGet(mixed $name) : mixed
 	{
 		if ($this->state === self::STATE_INITIAL) {
 			$this->boot();
@@ -534,9 +534,9 @@ class Container implements ArrayAccess {
 	 * 
 	 */
 	
-	public function offsetSet($name, $value)
+	public function offsetSet(mixed $name, mixed $value) : void
 	{
-		return $this->value($name, $value);
+		$this->value($name, $value);
 	}
 
 
@@ -547,14 +547,14 @@ class Container implements ArrayAccess {
 	 *
 	 * Satisfies ArrayAcces interface.
 	 *
-	 * @param  string $name
+	 * @param  mixed $name
 	 *    The name of dependency value to check
 	 *
 	 * @return bool
 	 * 
 	 */
 	
-	public function offsetExists($name)
+	public function offsetExists(mixed $name) : bool
 	{
 		if ($this->state === self::STATE_INITIAL) {
 			$this->boot();
@@ -570,14 +570,14 @@ class Container implements ArrayAccess {
 	 *
 	 * @throws Exception allways as this method is not implemented
 	 *
-	 * @param  string $name
+	 * @param  mixed $name
 	 *    The name to unset
 	 *
 	 * @return void
 	 * 
 	 */
 	
-	public function offsetUnset($name)
+	public function offsetUnset(mixed $name) : void
 	{
 		throw new Exception("Not implemented");		
 	}

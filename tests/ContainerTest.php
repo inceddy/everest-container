@@ -72,13 +72,11 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
     $this->assertEquals($container['aFactory'], 'Test');    
   }
 
-  /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage Provider for 'UnknownKey' not found
-     */
-  
   public function testDependenyNotFound()
   {
+    $this->expectException(\Exception::class);
+    $this->expectExceptionMessage('Provider for \'UnknownKey\' not found');
+
     $container = $this->buildContainer();
     $container['UnknownKey'];
   }
@@ -203,13 +201,11 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
     $this->assertEquals($container['Action3'], 'A B');
     $this->assertEquals($container['Action4'], 'B A');
   }
-
-  /**
-   * @expectedException InvalidArgumentException
-   */
   
   public function testInvalidLateBind()
   {
+    $this->expectException(\InvalidArgumentException::class);
+
     $container = $this->buildContainer()
       // Some simple values
       ->value('Dep1', 'A')
@@ -221,12 +217,10 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
     $container['Action'];
   }
 
-  /**
-   * @expectedException LogicException
-   */
-  
   public function testRingDependencies()
   {
+    $this->expectException(\LogicException::class);
+
     $container = $this->buildContainer()
       ->factory('A', ['B', function($b){}])
       ->factory('B', ['A', function($a){}]);
@@ -239,23 +233,21 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
     $foo = new Foo;
     $tests = [
       'Closure'           => function($A, $B, $C) {},
-      'ClassName'         => Foo::CLASS,
-      'ClassName::method' => Foo::CLASS . '::bar',
-      'ClassName, method' => [Foo::CLASS, 'bar'],
+      'ClassName'         => Foo::class,
+      //'ClassName::method' => Foo::class . '::bar',
+      //'ClassName, method' => [Foo::class, 'bar'],
       'Instance, method'  => [$foo, 'bar']
     ];
 
     foreach ($tests as $name => $scenario) {
+      echo $name;
       $this->assertEquals(['A', 'B', 'C', $scenario], Container::getDependencyArray($scenario));
     }
   }
-
-  /**
-   * @expectedException InvalidArgumentException
-   */
   
   public function testParameterExtractionFailure()
   {
+    $this->expectException(\InvalidArgumentException::class);
     Container::getDependencyArray('string-no-argument');
   }
 
@@ -292,12 +284,11 @@ class ContainerTest extends PHPUnit\Framework\TestCase {
     $this->assertEquals('Value', $container->Test);
   }
 
-  /**
-   * @expectedException Exception
-   */
-  
+
   public function testOffsetUnsetIsNotImplementes()
   {
+    $this->expectException(\Exception::class);
+
     $container = $this->buildContainer();
     unset($container['Test']);
   }

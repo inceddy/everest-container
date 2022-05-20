@@ -94,14 +94,12 @@ class InjectorTest extends PHPUnit\Framework\TestCase {
     $this->assertEquals(1, $foo->B);
     $this->assertEquals(4, $foo->C);
   }
-
-  /**
-   * @expectedException InvalidArgumentException
-   * @expectedExceptionMessage Instantiation of UnkownClassName not possible.
-   */
   
   public function testInstantiateWithUnkownConstructor()
   {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Instantiation of UnkownClassName not possible.');
+
     // Depedencies
     $cache = new Cache;
     $cache->set('A', 1);
@@ -114,14 +112,11 @@ class InjectorTest extends PHPUnit\Framework\TestCase {
 
     $foo = $injector->instantiate(['A', 'B', 'C', 'UnkownClassName']);
   }
-
-  /**
-   * @expectedException InvalidArgumentException
-   * @expectedExceptionMessage Instantiation of
-   */
   
   public function testInstantiateWithInvalidConstructor()
   {
+    $this->expectException(\InvalidArgumentException::class);
+
     // Depedencies
     $cache = new Cache;
     $cache->set('A', 1);
